@@ -9,7 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "js": "^0.1.0",
     "next": "14.1.3",
+    "peer": "^1.0.2",
     "peerjs": "^1.5.2",
     "react": "^18",
     "react-dom": "^18",
