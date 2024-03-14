@@ -1,3 +1,5 @@
+import { useScoket } from "@/context/socket";
+
 const { useState, useEffect, useRef } = require("react");
 
 const usePeer = () => {
