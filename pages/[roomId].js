@@ -10,7 +10,7 @@ const Room = () => {
   const socket = useScoket();
   const { peer, myId } = usePeer();
   const { stream } = useMediaStream();
-  const { players, setPlayers } = usePlayer;
+  const { players, setPlayers } = usePlayer();
 
   useEffect(() => {
     if (!socket || !peer || !stream) return;
@@ -35,7 +35,7 @@ const Room = () => {
     socket.on("user connected", handleUserConnected);
 
     return () => {
-      socket.off("user connected", handleUserConnected);
+      socket.off("user-connected", handleUserConnected);
     };
   }, [peer, setPlayers, socket, stream]);
 
@@ -61,7 +61,7 @@ const Room = () => {
 
   useEffect(() => {
     if (!stream || !myId) return;
-    console.log(`incoming stream from ${myId}`);
+    console.log(` setting my stream  ${myId}`);
     setPlayers((prev) => ({
       ...prev,
       [myId]: {
