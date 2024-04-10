@@ -7,7 +7,7 @@ const Player = (props) => {
   const { url, muted, playing, isActive } = props;
   return (
     <div
-      className={cx(styles.PlayerContainer, {
+      className={cx(styles.playerContainer, {
         [styles.notActive]: !isActive,
         [styles.active]: isActive,
         //[styles.notPlaying]: !playing,
@@ -17,8 +17,8 @@ const Player = (props) => {
         url={url}
         muted={muted}
         playing={playing}
-        // width="100%"
-        // height="100%"
+        width="100%"
+        height="100%"
       />
     </div>
   );

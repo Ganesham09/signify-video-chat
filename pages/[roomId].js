@@ -77,7 +77,7 @@ const Room = () => {
 
   return (
     <>
-      <div className={styles.activeplayerContainer}>
+      <div className={styles.activePlayerContainer}>
         {playerHiglighted && (
           <Player
             url={playerHiglighted.url}
@@ -87,7 +87,7 @@ const Room = () => {
           />
         )}
       </div>
-      <div className={styles.inActiveplayerContainer}>
+      <div className={styles.inActivePlayerContainer}>
         {Object.keys(nonHighlightedPlayers).map((playerId) => {
           const { url, muted, playing } = nonHighlightedPlayers[playerId];
           return (
