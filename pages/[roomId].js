@@ -1,19 +1,33 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { cloneDeep } from "lodash";
 
 import { useScoket } from "@/context/socket";
 import usePeer from "@/hooks/usePeer";
 import useMediaStream from "@/hooks/useMediaStream";
 import Player from "@/components/player";
+import Bottom from "@/components/bottom";
+import CopySection from "@/components/CopySection";
 import usePlayer from "@/hooks/usePlayer";
 
 import styles from "@/styles/room.module.css";
+import { useRouter } from "next/router";
 
 const Room = () => {
   const socket = useScoket();
+  const { roomId } = useRouter().query;
   const { peer, myId } = usePeer();
   const { stream } = useMediaStream();
-  const { players, setPlayers, playerHiglighted, nonHighlightedPlayers } =
-    usePlayer(myId);
+  const {
+    players,
+    setPlayers,
+    playerHiglighted,
+    nonHighlightedPlayers,
+    toggleAudio,
+    toggleVideo,
+    leaveRoom,
+  } = usePlayer(myId, roomId, peer);
+
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     if (!socket || !peer || !stream) return;
@@ -33,6 +47,11 @@ const Room = () => {
             playing: true,
           },
         }));
+
+        setUsers((prev) => ({
+          ...prev,
+          [newUser]: call,
+        }));
       });
     };
     socket.on("user connected", handleUserConnected);
@@ -41,6 +60,43 @@ const Room = () => {
       socket.off("user-connected", handleUserConnected);
     };
   }, [peer, setPlayers, socket, stream]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleToggleAudio = (userId) => {
+      console.log(`user with id ${userId} toggle audio`);
+      setPlayers((prev) => {
+        const copy = cloneDeep(prev);
+        copy[userId].muted = !copy[userId].muted;
+        return { ...copy };
+      });
+    };
+
+    const handleToggleVideo = (userId) => {
+      console.log(`user with id ${userId} toggled video`);
+      setPlayers((prev) => {
+        const copy = cloneDeep(prev);
+        copy[userId].playing = !copy[userId].playing;
+        return { ...copy };
+      });
+    };
+    const handleUserLeave = (userId) => {
+      console.log(`user with id ${userId} is leaving the room`);
+      users[[userId]]?.close();
+      const playersCopy = cloneDeep(players);
+      delete playersCopy[userId];
+      setPlayers(playersCopy);
+    };
+    socket.on("user-toggle-audio", handleToggleAudio);
+    socket.on("user-toggle-video", handleToggleVideo);
+    socket.on("user-leave", handleUserLeave);
+
+    return () => {
+      socket.off("user-toggle-audio", handleToggleAudio);
+      socket.off("user-toggle-video", handleToggleVideo);
+      socket.off("user-leave", handleUserLeave);
+    };
+  }, [players, setPlayers, socket, users]);
 
   useEffect(() => {
     if (!peer || !stream) return;
@@ -57,6 +113,10 @@ const Room = () => {
             muted: false,
             playing: true,
           },
+        }));
+        setUsers((prev) => ({
+          ...prev,
+          [callerId]: call,
         }));
       });
     });
@@ -101,6 +161,14 @@ const Room = () => {
           );
         })}
       </div>
+      <CopySection roomId={roomId} />
+      <Bottom
+        muted={playerHiglighted?.muted}
+        playing={playerHiglighted?.playing}
+        toggleAudio={toggleAudio}
+        toggleVideo={toggleVideo}
+        leaveRoom={leaveRoom}
+      />
     </>
   );
 };
